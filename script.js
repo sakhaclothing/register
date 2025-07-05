@@ -102,13 +102,7 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
                 text: 'Akun Anda telah berhasil dibuat. Silakan login.',
                 confirmButtonText: 'Login',
                 confirmButtonColor: '#000000',
-                background: '#ffffff',
-                backdrop: `
-        rgba(0,0,123,0.4)
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/svg%3E")
-        left top
-        no-repeat
-      `
+                background: '#ffffff'
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = 'https://sakhaclothing.shop/login/';
