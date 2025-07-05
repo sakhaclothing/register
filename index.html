@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register - Sakha Clothing</title>
-  <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- jscroot CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/jscroot@latest/dist/jscroot.min.js"></script>
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ 
   <style>
     :root {
       --accent-color: rgb(0, 0, 0);
@@ -115,19 +116,53 @@
       } else {
         errorMsg.classList.add('hidden');
       }
-      // Contoh penggunaan jscroot untuk AJAX register (endpoint dummy)
-      jscroot.request({
-        url: 'https://example.com/api/register',
+      // Register API call using fetch
+      fetch('https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/register', {
         method: 'POST',
-        data: { username, password },
-        success: function(response) {
-          alert('Register berhasil! Silakan login.');
-          window.location.href = 'index.html';
+        headers: {
+          'Content-Type': 'application/json',
         },
-        error: function(err) {
-          errorMsg.textContent = 'Register gagal. Username mungkin sudah digunakan.';
-          errorMsg.classList.remove('hidden');
+        body: JSON.stringify({ 
+          username: username, 
+          password: password 
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Register failed');
         }
+        return response.json();
+      })
+      .then(data => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Register Berhasil!',
+          text: 'Akun Anda telah berhasil dibuat. Silakan login.',
+          confirmButtonText: 'Login',
+          confirmButtonColor: '#000000',
+          background: '#ffffff',
+          backdrop: `
+            rgba(0,0,123,0.4)
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/svg%3E")
+            left top
+            no-repeat
+          `
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = 'https://sakhaclothing.shop/login/';
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Register Gagal!',
+          text: 'Username mungkin sudah digunakan atau terjadi kesalahan.',
+          confirmButtonText: 'Coba Lagi',
+          confirmButtonColor: '#000000',
+          background: '#ffffff'
+        });
       });
     });
     // Show/hide password logic
