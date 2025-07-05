@@ -55,8 +55,24 @@
           <!-- Ikon user -->
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 17.232A6 6 0 1 0 6 21h12a6 6 0 0 0-2.768-3.768z"/><circle cx="12" cy="9" r="4"/></svg>
         </span>
-        <label for="username" class="block text-xs font-semibold text-gray-600 mb-1">Username or Email</label>
-        <input type="text" id="username" name="username" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition shadow-sm bg-white/90" placeholder="Enter your username or email" required>
+        <label for="username" class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
+        <input type="text" id="username" name="username" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition shadow-sm bg-white/90" placeholder="Enter your username" required>
+      </div>
+      <div class="relative">
+        <span class="input-icon">
+          <!-- Ikon email -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+        </span>
+        <label for="email" class="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+        <input type="email" id="email" name="email" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition shadow-sm bg-white/90" placeholder="Enter your email" required>
+      </div>
+      <div class="relative">
+        <span class="input-icon">
+          <!-- Ikon user -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+        </span>
+        <label for="fullname" class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+        <input type="text" id="fullname" name="fullname" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition shadow-sm bg-white/90" placeholder="Enter your full name" required>
       </div>
       <div class="relative">
         <span class="input-icon">
@@ -107,15 +123,79 @@
     document.getElementById('registerForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const fullname = document.getElementById('fullname').value.trim();
       const password = document.getElementById('password').value.trim();
-      const confirmPassword = document.getElementById('confirmPassword').value.trim();
+      const confirmPassword = document.getElementById('confirmPassword').value.trim() ;
       const errorMsg = document.getElementById('errorMsg');
-      if (!username || !password || !confirmPassword || password !== confirmPassword) {
+      
+      // Validate all fields are not empty
+      if (!username) {
+        errorMsg.textContent = 'Username wajib diisi.';
         errorMsg.classList.remove('hidden');
         return;
-      } else {
-        errorMsg.classList.add('hidden');
       }
+      
+      if (!email) {
+        errorMsg.textContent = 'Email wajib diisi.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      if (!fullname) {
+        errorMsg.textContent = 'Nama lengkap wajib diisi.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      if (!password) {
+        errorMsg.textContent = 'Password wajib diisi.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      if (!confirmPassword) {
+        errorMsg.textContent = 'Konfirmasi password wajib diisi.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        errorMsg.textContent = 'Format email tidak valid.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      // Validate minimum length for fields
+      if (username.length < 3) {
+        errorMsg.textContent = 'Username minimal 3 karakter.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      if (fullname.length < 2) {
+        errorMsg.textContent = 'Nama lengkap minimal 2 karakter.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      if (password.length < 6) {
+        errorMsg.textContent = 'Password minimal 6 karakter.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      // Validate password match
+      if (password !== confirmPassword) {
+        errorMsg.textContent = 'Password dan konfirmasi password harus sama.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+      
+      // Hide error message if all validations pass
+      errorMsg.classList.add('hidden');
       // Register API call using fetch
       fetch('https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/register', {
         method: 'POST',
@@ -123,7 +203,9 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          username: username, 
+          username: username,
+          email: email,
+          fullname: fullname,
           password: password 
         })
       })
