@@ -84,6 +84,15 @@
       <div id="errorMsg" class="text-red-500 text-sm hidden">Semua field wajib diisi dan password harus sama.</div>
       <button type="submit" class="w-full py-2 px-4 bg-gradient-to-r from-black to-gray-800 text-white font-semibold rounded-lg shadow-md hover:from-gray-800 hover:to-black focus:outline-none focus:ring-2 focus:ring-black transition">Register</button>
     </form>
+    <form id="otpForm" class="space-y-6 hidden">
+      <div class="relative">
+        <label for="otp" class="block text-xs font-semibold text-gray-600 mb-1">Masukkan Kode OTP</label>
+        <input type="text" id="otp" name="otp" maxlength="6" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition shadow-sm bg-white/90" placeholder="6 digit kode OTP" required>
+      </div>
+      <div id="otpErrorMsg" class="text-red-500 text-sm hidden">Kode OTP wajib diisi.</div>
+      <button type="submit" class="w-full py-2 px-4 bg-gradient-to-r from-black to-gray-800 text-white font-semibold rounded-lg shadow-md hover:from-gray-800 hover:to-black focus:outline-none focus:ring-2 focus:ring-black transition">Verifikasi OTP</button>
+      <div class="mt-2 text-center text-gray-500 text-xs">Belum menerima kode? <button type="button" id="resendOtpBtn" class="text-black hover:underline font-semibold">Kirim Ulang OTP</button></div>
+    </form>
     <div class="mt-6 text-center">
       <span class="block text-gray-500 text-sm">Sudah punya akun? <a href="https://sakhaclothing.shop/login/" class="text-black hover:underline font-semibold">Login</a></span>
     </div>

@@ -96,17 +96,18 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             return response.json();
         })
         .then(data => {
+            // Tampilkan form OTP, sembunyikan form register
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('otpForm').classList.remove('hidden');
+            // Simpan email ke sessionStorage untuk verifikasi OTP
+            sessionStorage.setItem('registerEmail', email);
             Swal.fire({
                 icon: 'success',
                 title: 'Register Berhasil!',
-                text: 'Akun Anda telah berhasil dibuat. Silakan login.',
-                confirmButtonText: 'Login',
+                text: 'Kode OTP telah dikirim ke email Anda. Silakan verifikasi.',
+                confirmButtonText: 'OK',
                 confirmButtonColor: '#000000',
                 background: '#ffffff'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'https://sakhaclothing.shop/login/';
-                }
             });
         })
         .catch(error => {
@@ -157,4 +158,53 @@ togglePassword.addEventListener('click', function () {
 toggleConfirmPassword.addEventListener('click', function () {
     passwordVisible = !passwordVisible;
     setPasswordVisibility(passwordVisible);
+});
+
+// OTP form handler
+const otpForm = document.getElementById('otpForm');
+otpForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const otp = document.getElementById('otp').value.trim();
+    const otpErrorMsg = document.getElementById('otpErrorMsg');
+    const email = sessionStorage.getItem('registerEmail');
+    if (!otp) {
+        otpErrorMsg.textContent = 'Kode OTP wajib diisi.';
+        otpErrorMsg.classList.remove('hidden');
+        return;
+    }
+    otpErrorMsg.classList.add('hidden');
+    fetch('https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/verify-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            otp: otp
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message && data.message.includes('berhasil')) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Verifikasi Berhasil!',
+                    text: 'Email Anda berhasil diverifikasi. Silakan login.',
+                    confirmButtonText: 'Login',
+                    confirmButtonColor: '#000000',
+                    background: '#ffffff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'https://sakhaclothing.shop/login/';
+                    }
+                });
+            } else {
+                otpErrorMsg.textContent = data.error || 'OTP salah atau sudah expired.';
+                otpErrorMsg.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            otpErrorMsg.textContent = 'Terjadi kesalahan. Coba lagi.';
+            otpErrorMsg.classList.remove('hidden');
+        });
 }); 
