@@ -7,6 +7,7 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
     const password = document.getElementById('password').value.trim();
     const confirmPassword = document.getElementById('confirmPassword').value.trim();
     const errorMsg = document.getElementById('errorMsg');
+    const turnstileToken = document.querySelector('input[name="cf-turnstile-response"]')?.value;
 
     // Validate all fields are not empty
     if (!username) {
@@ -35,6 +36,12 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
 
     if (!confirmPassword) {
         errorMsg.textContent = 'Konfirmasi password wajib diisi.';
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+
+    if (!turnstileToken) {
+        errorMsg.textContent = 'CAPTCHA wajib diisi.';
         errorMsg.classList.remove('hidden');
         return;
     }
@@ -86,7 +93,8 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
             username: username,
             email: email,
             fullname: fullname,
-            password: password
+            password: password,
+            "cf-turnstile-response": turnstileToken
         })
     })
         .then(response => {
