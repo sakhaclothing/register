@@ -1,8 +1,3 @@
-import { postJSON } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.2.8/api.min.js";
-import { validateEmail, validateRequired } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.2.8/validate.min.js";
-import { showLoading, hideLoading } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.2.8/loading.min.js";
-import { setInner, show, hide } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.2.8/element.min.js";
-
 document.getElementById('registerForm').addEventListener('submit', function (e) {
     e.preventDefault();
     
@@ -12,48 +7,65 @@ document.getElementById('registerForm').addEventListener('submit', function (e) 
     const password = document.getElementById('password').value.trim();
     const confirmPassword = document.getElementById('confirmPassword').value.trim();
     const turnstileToken = document.querySelector('input[name="cf-turnstile-response"]')?.value;
+    const termsAccepted = document.getElementById('termsCheckbox').checked;
     const errorMsg = document.getElementById('errorMsg');
 
-    // Validation using jscroot
-    if (!validateRequired(username) || !validateRequired(fullname) || !validateRequired(password)) {
-        setInner('errorMsg', 'Semua field wajib diisi.');
-        show('errorMsg');
+    // Basic validation
+    if (!username || !fullname || !password || !email) {
+        errorMsg.textContent = 'Semua field wajib diisi.';
+        errorMsg.style.display = 'block';
         return;
     }
 
-    if (!validateEmail(email)) {
-        setInner('errorMsg', 'Format email tidak valid.');
-        show('errorMsg');
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        errorMsg.textContent = 'Format email tidak valid.';
+        errorMsg.style.display = 'block';
         return;
     }
 
     if (password !== confirmPassword) {
-        setInner('errorMsg', 'Password dan konfirmasi password harus sama.');
-        show('errorMsg');
+        errorMsg.textContent = 'Password dan konfirmasi password harus sama.';
+        errorMsg.style.display = 'block';
         return;
     }
 
-    hide('errorMsg');
-    showLoading('Registering...');
+    // Terms validation
+    if (!termsAccepted) {
+        errorMsg.textContent = 'Anda harus menyetujui Syarat dan Ketentuan untuk melanjutkan.';
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    errorMsg.style.display = 'none';
 
     const registerData = {
         username, email, fullname, password,
         "cf-turnstile-response": turnstileToken
     };
 
-    postJSON(
-        'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/register',
-        registerData,
-        (response) => {
-            hideLoading();
-            if (response.status === 201) {
-                sessionStorage.setItem('registerEmail', email);
-                show('otpSection');
-                hide('registerSection');
-            } else {
-                setInner('errorMsg', response.data.error || 'Registrasi gagal.');
-                show('errorMsg');
-            }
+    fetch('https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(registerData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.message && data.message.includes('berhasil')) {
+            sessionStorage.setItem('registerEmail', email);
+            document.getElementById('otpSection').style.display = 'block';
+            document.getElementById('registerSection').style.display = 'none';
+        } else {
+            errorMsg.textContent = data.error || 'Registrasi gagal.';
+            errorMsg.style.display = 'block';
         }
-    );
+    })
+    .catch(err => {
+        console.error('Register error:', err);
+        errorMsg.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+        errorMsg.style.display = 'block';
+    });
 }); 

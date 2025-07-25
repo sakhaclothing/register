@@ -148,7 +148,18 @@
         </div>
         <div id="errorMsg" class="text-red-500 text-sm hidden">Semua field wajib diisi dan password harus sama.</div>
         <div class="cf-turnstile" data-sitekey="0x4AAAAAABlTVjEWUWuVFL8w"></div>
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        
+        <!-- Terms of Service Checkbox -->
+        <div class="flex items-start space-x-3 mb-4">
+          <input type="checkbox" id="termsCheckbox" name="terms" class="mt-1 h-4 w-4 text-black border-gray-300 rounded focus:ring-black focus:ring-2" required>
+          <label for="termsCheckbox" class="text-sm text-gray-700 leading-5">
+            Saya setuju dengan 
+            <a href="../terms/index.html" target="_blank" class="text-black hover:underline font-semibold">Syarat dan Ketentuan</a> 
+            serta 
+            <a href="../privacy/index.html" target="_blank" class="text-black hover:underline font-semibold">Kebijakan Privasi</a>
+          </label>
+        </div>
+        
         <button type="submit" class="w-full py-2 px-4 bg-gradient-to-r from-black to-gray-800 text-white font-semibold rounded-lg shadow-md hover:from-gray-800 hover:to-black focus:outline-none focus:ring-2 focus:ring-black transition">Register</button>
       </form>
       <form id="otpForm" class="space-y-6 hidden">
