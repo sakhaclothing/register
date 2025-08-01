@@ -101,6 +101,13 @@
         <input type="text" id="otp" name="otp" maxlength="6" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black transition shadow-sm bg-white/90" placeholder="6 digit kode OTP" required>
       </div>
       <div id="otpErrorMsg" class="text-red-500 text-sm hidden">Kode OTP wajib diisi.</div>
+      
+      <!-- OTP Countdown Timer -->
+      <div class="text-center">
+        <div class="text-sm text-gray-600 mb-2">Waktu tersisa:</div>
+        <div id="otpCountdown" class="text-lg font-semibold text-gray-600">5:00</div>
+      </div>
+      
       <button type="submit" class="w-full py-2 px-4 bg-gradient-to-r from-black to-gray-800 text-white font-semibold rounded-lg shadow-md hover:from-gray-800 hover:to-black focus:outline-none focus:ring-2 focus:ring-black transition">Verifikasi OTP</button>
       <div class="mt-2 text-center text-gray-500 text-xs">Belum menerima kode? <button type="button" id="resendOtpBtn" class="text-black hover:underline font-semibold">Kirim Ulang OTP</button></div>
     </form>

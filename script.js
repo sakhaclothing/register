@@ -136,6 +136,9 @@ async function registerWithJscroot(userData) {
                 registerForm.classList.add('hidden');
                 otpForm.classList.remove('hidden');
                 console.log('OTP form should now be visible');
+
+                // Start OTP timeout (5 minutes)
+                startOTPTimeout();
             } else {
                 console.error('Forms not found:', { registerForm, otpForm });
             }
@@ -202,6 +205,9 @@ async function verifyOTPWithJscroot(otp) {
         }
 
         if (response.status === 200) {
+            // Clear OTP timeout
+            clearOTPTimeout();
+
             // Clear cookies
             window.jscroot.setCookieWithExpireHour('registration_pending', '', 0);
             window.jscroot.setCookieWithExpireHour('pending_email', '', 0);
@@ -250,11 +256,100 @@ async function handleRegisterUrlParameters() {
     }
 }
 
+// OTP Timeout variables
+let otpTimeoutId = null;
+let otpTimeRemaining = 300; // 5 minutes in seconds
+
 // Helper functions
 function showError(message) {
     const errorMsg = document.getElementById('errorMsg');
     errorMsg.textContent = message;
     errorMsg.classList.remove('hidden');
+}
+
+// OTP Timeout functions
+function startOTPTimeout() {
+    // Clear any existing timeout
+    if (otpTimeoutId) {
+        clearInterval(otpTimeoutId);
+    }
+
+    // Reset time remaining
+    otpTimeRemaining = 300; // 5 minutes
+
+    // Update countdown display
+    updateOTPCountdown();
+
+    // Start countdown timer
+    otpTimeoutId = setInterval(() => {
+        otpTimeRemaining--;
+        updateOTPCountdown();
+
+        if (otpTimeRemaining <= 0) {
+            clearInterval(otpTimeoutId);
+            handleOTPTimeout();
+        }
+    }, 1000);
+}
+
+function updateOTPCountdown() {
+    const minutes = Math.floor(otpTimeRemaining / 60);
+    const seconds = otpTimeRemaining % 60;
+    const countdownElement = document.getElementById('otpCountdown');
+
+    if (countdownElement) {
+        countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        // Change color when time is running low
+        if (otpTimeRemaining <= 60) {
+            countdownElement.style.color = '#ef4444'; // red
+        } else if (otpTimeRemaining <= 120) {
+            countdownElement.style.color = '#f59e0b'; // orange
+        } else {
+            countdownElement.style.color = '#6b7280'; // gray
+        }
+    }
+}
+
+function handleOTPTimeout() {
+    // Clear cookies
+    window.jscroot.setCookieWithExpireHour('registration_pending', '', 0);
+    window.jscroot.setCookieWithExpireHour('pending_email', '', 0);
+
+    // Show timeout message
+    Swal.fire({
+        icon: 'warning',
+        title: 'Waktu Habis',
+        text: 'Waktu verifikasi OTP telah habis. Silakan daftar ulang.',
+        confirmButtonColor: '#000000',
+        confirmButtonText: 'OK'
+    }).then(() => {
+        // Reset to register form
+        const registerForm = document.getElementById('registerForm');
+        const otpForm = document.getElementById('otpForm');
+
+        if (registerForm && otpForm) {
+            otpForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+
+            // Clear form fields
+            document.getElementById('username').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('fullname').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('confirmPassword').value = '';
+
+            // Hide any error messages
+            hideError();
+        }
+    });
+}
+
+function clearOTPTimeout() {
+    if (otpTimeoutId) {
+        clearInterval(otpTimeoutId);
+        otpTimeoutId = null;
+    }
 }
 
 function hideError() {
@@ -405,6 +500,9 @@ async function setupResendOTP() {
                 }
 
                 if (response.status === 200) {
+                    // Reset OTP timeout for new OTP
+                    startOTPTimeout();
+
                     Swal.fire({
                         icon: 'success',
                         title: 'OTP Terkirim',
