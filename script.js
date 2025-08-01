@@ -137,8 +137,11 @@ async function registerWithJscroot(userData) {
                 otpForm.classList.remove('hidden');
                 console.log('OTP form should now be visible');
 
-                // Start OTP timeout (5 minutes)
-                startOTPTimeout();
+                // Wait a bit for DOM to update, then start timer
+                setTimeout(() => {
+                    console.log('Starting timer after DOM update...');
+                    startOTPTimeout();
+                }, 100);
             } else {
                 console.error('Forms not found:', { registerForm, otpForm });
             }
@@ -272,27 +275,44 @@ function showError(message) {
 
 // OTP Timeout functions
 function startOTPTimeout() {
+    console.log('Starting OTP timeout...');
+
     // Clear any existing timeout
     if (otpTimeoutId) {
         clearInterval(otpTimeoutId);
+        otpTimeoutId = null;
     }
 
     // Reset time remaining
     otpTimeRemaining = 300; // 5 minutes
+    console.log('Time remaining:', otpTimeRemaining);
 
-    // Update countdown display
+    // Check if countdown element exists
+    const countdownElement = document.getElementById('otpCountdown');
+    if (!countdownElement) {
+        console.error('Countdown element not found, cannot start timer');
+        return;
+    }
+
+    // Update countdown display immediately
     updateOTPCountdown();
 
     // Start countdown timer
     otpTimeoutId = setInterval(() => {
         otpTimeRemaining--;
-        updateOTPCountdown();
+        console.log('Timer tick:', otpTimeRemaining);
 
         if (otpTimeRemaining <= 0) {
+            console.log('Timer finished, handling timeout...');
             clearInterval(otpTimeoutId);
+            otpTimeoutId = null;
             handleOTPTimeout();
+        } else {
+            updateOTPCountdown();
         }
     }, 1000);
+
+    console.log('Timer started with ID:', otpTimeoutId);
 }
 
 function updateOTPCountdown() {
@@ -300,8 +320,13 @@ function updateOTPCountdown() {
     const seconds = otpTimeRemaining % 60;
     const countdownElement = document.getElementById('otpCountdown');
 
+    console.log('Updating countdown:', minutes, ':', seconds.toString().padStart(2, '0'));
+    console.log('Countdown element found:', !!countdownElement);
+
     if (countdownElement) {
-        countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        countdownElement.textContent = timeString;
+        console.log('Updated countdown to:', timeString);
 
         // Change color when time is running low
         if (otpTimeRemaining <= 60) {
@@ -311,6 +336,8 @@ function updateOTPCountdown() {
         } else {
             countdownElement.style.color = '#6b7280'; // gray
         }
+    } else {
+        console.error('Countdown element not found!');
     }
 }
 
