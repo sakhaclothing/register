@@ -87,9 +87,11 @@ async function validateRegisterForm() {
 async function registerWithJscroot(userData) {
     await waitForJscroot();
 
+    let loadingElement = null;
+
     try {
         // Show loading
-        const loadingElement = document.createElement('div');
+        loadingElement = document.createElement('div');
         loadingElement.innerHTML = window.jscroot.loading;
         loadingElement.style.position = 'fixed';
         loadingElement.style.top = '50%';
@@ -108,7 +110,9 @@ async function registerWithJscroot(userData) {
         });
 
         // Hide loading
-        document.body.removeChild(loadingElement);
+        if (loadingElement && document.body.contains(loadingElement)) {
+            document.body.removeChild(loadingElement);
+        }
 
         if (response.status === 200) {
             // Set cookie for registration tracking
@@ -132,7 +136,7 @@ async function registerWithJscroot(userData) {
             throw new Error(response.data.error || 'Registration failed');
         }
     } catch (error) {
-        if (document.body.contains(loadingElement)) {
+        if (loadingElement && document.body.contains(loadingElement)) {
             document.body.removeChild(loadingElement);
         }
         showError(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
@@ -143,9 +147,11 @@ async function registerWithJscroot(userData) {
 async function verifyOTPWithJscroot(otp) {
     await waitForJscroot();
 
+    let loadingElement = null;
+
     try {
         // Show loading
-        const loadingElement = document.createElement('div');
+        loadingElement = document.createElement('div');
         loadingElement.innerHTML = window.jscroot.loading;
         loadingElement.style.position = 'fixed';
         loadingElement.style.top = '50%';
@@ -167,7 +173,9 @@ async function verifyOTPWithJscroot(otp) {
             );
         });
 
-        document.body.removeChild(loadingElement);
+        if (loadingElement && document.body.contains(loadingElement)) {
+            document.body.removeChild(loadingElement);
+        }
 
         if (response.status === 200) {
             // Clear cookies
@@ -188,7 +196,7 @@ async function verifyOTPWithJscroot(otp) {
             throw new Error(response.data.error || 'OTP verification failed');
         }
     } catch (error) {
-        if (document.body.contains(loadingElement)) {
+        if (loadingElement && document.body.contains(loadingElement)) {
             document.body.removeChild(loadingElement);
         }
         showOTPError(error.message || 'Verifikasi OTP gagal.');
@@ -220,18 +228,18 @@ async function handleRegisterUrlParameters() {
 
 // Helper functions
 function showError(message) {
-    const errorMsg = window.jscroot.getElement('errorMsg');
+    const errorMsg = document.getElementById('errorMsg');
     errorMsg.textContent = message;
     errorMsg.classList.remove('hidden');
 }
 
 function hideError() {
-    const errorMsg = window.jscroot.getElement('errorMsg');
+    const errorMsg = document.getElementById('errorMsg');
     errorMsg.classList.add('hidden');
 }
 
 function showOTPError(message) {
-    const otpErrorMsg = window.jscroot.getElement('otpErrorMsg');
+    const otpErrorMsg = document.getElementById('otpErrorMsg');
     otpErrorMsg.textContent = message;
     otpErrorMsg.classList.remove('hidden');
 }
@@ -275,7 +283,7 @@ async function setupRegisterForm() {
             const password = window.jscroot.getValue('password').trim();
             const confirmPassword = window.jscroot.getValue('confirmPassword').trim();
             const turnstileToken = document.querySelector('input[name="cf-turnstile-response"]')?.value;
-            const termsAccepted = window.jscroot.getElement('termsCheckbox').checked;
+            const termsAccepted = document.getElementById('termsCheckbox').checked;
 
             if (!termsAccepted) {
                 showError('Anda harus menyetujui Syarat dan Ketentuan untuk melanjutkan.');
@@ -335,9 +343,11 @@ async function setupResendOTP() {
     const resendOtpBtn = document.getElementById('resendOtpBtn');
     if (resendOtpBtn) {
         resendOtpBtn.addEventListener('click', async function () {
+            let loadingElement = null;
+
             try {
                 // Show loading
-                const loadingElement = document.createElement('div');
+                loadingElement = document.createElement('div');
                 loadingElement.innerHTML = window.jscroot.loading;
                 loadingElement.style.position = 'fixed';
                 loadingElement.style.top = '50%';
@@ -359,7 +369,9 @@ async function setupResendOTP() {
                     );
                 });
 
-                document.body.removeChild(loadingElement);
+                if (loadingElement && document.body.contains(loadingElement)) {
+                    document.body.removeChild(loadingElement);
+                }
 
                 if (response.status === 200) {
                     Swal.fire({
@@ -373,7 +385,7 @@ async function setupResendOTP() {
                     throw new Error(response.data.error || 'Gagal mengirim OTP');
                 }
             } catch (error) {
-                if (document.body.contains(loadingElement)) {
+                if (loadingElement && document.body.contains(loadingElement)) {
                     document.body.removeChild(loadingElement);
                 }
                 showOTPError(error.message || 'Gagal mengirim ulang OTP.');
