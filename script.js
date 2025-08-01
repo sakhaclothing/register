@@ -1,141 +1,405 @@
-// Form submission handler
-document.getElementById('registerForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const username = document.getElementById('username').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const fullname = document.getElementById('fullname').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const confirmPassword = document.getElementById('confirmPassword').value.trim();
-    const errorMsg = document.getElementById('errorMsg');
-    const turnstileToken = document.querySelector('input[name="cf-turnstile-response"]')?.value;
-    const termsAccepted = document.getElementById('termsCheckbox').checked;
+// JSCROOT Library Usage Examples for Register
+// ===========================================
 
-    // Validate all fields are not empty
-    if (!username) {
-        errorMsg.textContent = 'Username wajib diisi.';
-        errorMsg.classList.remove('hidden');
-        return;
+// Wait for jscroot to be ready
+function waitForJscroot() {
+    return new Promise((resolve) => {
+        if (window.jscroot) {
+            resolve();
+        } else {
+            document.addEventListener('jscroot-ready', resolve);
+        }
+    });
+}
+
+// Example 1: Form Validation using jscroot
+async function validateRegisterForm() {
+    await waitForJscroot();
+
+    const username = window.jscroot.getValue('username').trim();
+    const email = window.jscroot.getValue('email').trim();
+    const fullname = window.jscroot.getValue('fullname').trim();
+    const password = window.jscroot.getValue('password').trim();
+    const confirmPassword = window.jscroot.getValue('confirmPassword').trim();
+    const errorMsg = window.jscroot.getElement('errorMsg');
+
+    // Validate required fields
+    if (!username || username.trim() === '') {
+        showError('Username wajib diisi.');
+        return false;
     }
 
-    if (!email) {
-        errorMsg.textContent = 'Email wajib diisi.';
-        errorMsg.classList.remove('hidden');
-        return;
+    if (!email || email.trim() === '') {
+        showError('Email wajib diisi.');
+        return false;
     }
 
-    if (!fullname) {
-        errorMsg.textContent = 'Nama lengkap wajib diisi.';
-        errorMsg.classList.remove('hidden');
-        return;
+    if (!fullname || fullname.trim() === '') {
+        showError('Nama lengkap wajib diisi.');
+        return false;
     }
 
-    if (!password) {
-        errorMsg.textContent = 'Password wajib diisi.';
-        errorMsg.classList.remove('hidden');
-        return;
+    if (!password || password.trim() === '') {
+        showError('Password wajib diisi.');
+        return false;
     }
 
-    if (!confirmPassword) {
-        errorMsg.textContent = 'Konfirmasi password wajib diisi.';
-        errorMsg.classList.remove('hidden');
-        return;
-    }
-
-    if (!termsAccepted) {
-        errorMsg.textContent = 'Anda harus menyetujui Syarat dan Ketentuan untuk melanjutkan.';
-        errorMsg.classList.remove('hidden');
-        return;
-    }
-
-    if (!turnstileToken) {
-        errorMsg.textContent = 'CAPTCHA wajib diisi.';
-        errorMsg.classList.remove('hidden');
-        return;
+    if (!confirmPassword || confirmPassword.trim() === '') {
+        showError('Konfirmasi password wajib diisi.');
+        return false;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        errorMsg.textContent = 'Format email tidak valid.';
-        errorMsg.classList.remove('hidden');
-        return;
+        showError('Format email tidak valid.');
+        return false;
+    }
+
+    // Validate password
+    if (password.length < 6) {
+        showError('Password minimal 6 karakter.');
+        return false;
     }
 
     // Validate minimum length for fields
     if (username.length < 3) {
-        errorMsg.textContent = 'Username minimal 3 karakter.';
-        errorMsg.classList.remove('hidden');
-        return;
+        showError('Username minimal 3 karakter.');
+        return false;
     }
 
     if (fullname.length < 2) {
-        errorMsg.textContent = 'Nama lengkap minimal 2 karakter.';
-        errorMsg.classList.remove('hidden');
-        return;
-    }
-
-    if (password.length < 6) {
-        errorMsg.textContent = 'Password minimal 6 karakter.';
-        errorMsg.classList.remove('hidden');
-        return;
+        showError('Nama lengkap minimal 2 karakter.');
+        return false;
     }
 
     // Validate password match
     if (password !== confirmPassword) {
-        errorMsg.textContent = 'Password dan konfirmasi password harus sama.';
-        errorMsg.classList.remove('hidden');
-        return;
+        showError('Password dan konfirmasi password harus sama.');
+        return false;
     }
 
-    // Hide error message if all validations pass
-    errorMsg.classList.add('hidden');
+    hideError();
+    return true;
+}
 
-    // Register API call using fetch
-    fetch('https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            username: username,
-            email: email,
-            fullname: fullname,
-            password: password,
-            "cf-turnstile-response": turnstileToken
-        })
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Register failed');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Tampilkan form OTP, sembunyikan form register
+// Example 2: API calls using jscroot
+async function registerWithJscroot(userData) {
+    await waitForJscroot();
+
+    try {
+        // Show loading
+        const loadingElement = document.createElement('div');
+        loadingElement.innerHTML = window.jscroot.loading;
+        loadingElement.style.position = 'fixed';
+        loadingElement.style.top = '50%';
+        loadingElement.style.left = '50%';
+        loadingElement.style.transform = 'translate(-50%, -50%)';
+        loadingElement.style.zIndex = '9999';
+        document.body.appendChild(loadingElement);
+
+        // Use jscroot API functions
+        const response = await new Promise((resolve) => {
+            window.jscroot.postJSON(
+                'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/register',
+                userData,
+                resolve
+            );
+        });
+
+        // Hide loading
+        document.body.removeChild(loadingElement);
+
+        if (response.status === 200) {
+            // Set cookie for registration tracking
+            window.jscroot.setCookieWithExpireHour('registration_pending', 'true', 1);
+
+            // Get browser info for analytics
+            const browserInfo = {
+                isMobile: window.jscroot.isMobile()
+            };
+
+            console.log('Registration Browser Info:', browserInfo);
+
+            // Success - show OTP form
             document.getElementById('registerForm').classList.add('hidden');
             document.getElementById('otpForm').classList.remove('hidden');
-            // Simpan email ke sessionStorage untuk verifikasi OTP
-            sessionStorage.setItem('registerEmail', email);
+
+            // Store email for OTP verification
+            window.jscroot.setCookieWithExpireHour('pending_email', userData.email, 1);
+
+        } else {
+            throw new Error(response.data.error || 'Registration failed');
+        }
+    } catch (error) {
+        if (document.body.contains(loadingElement)) {
+            document.body.removeChild(loadingElement);
+        }
+        showError(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
+    }
+}
+
+// Example 3: OTP verification using jscroot
+async function verifyOTPWithJscroot(otp) {
+    await waitForJscroot();
+
+    try {
+        // Show loading
+        const loadingElement = document.createElement('div');
+        loadingElement.innerHTML = window.jscroot.loading;
+        loadingElement.style.position = 'fixed';
+        loadingElement.style.top = '50%';
+        loadingElement.style.left = '50%';
+        loadingElement.style.transform = 'translate(-50%, -50%)';
+        loadingElement.style.zIndex = '9999';
+        document.body.appendChild(loadingElement);
+
+        const email = window.jscroot.getCookie('pending_email');
+        if (!email) {
+            throw new Error('Email tidak ditemukan. Silakan daftar ulang.');
+        }
+
+        const response = await new Promise((resolve) => {
+            window.jscroot.postJSON(
+                'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/verify-otp',
+                { email, otp },
+                resolve
+            );
+        });
+
+        document.body.removeChild(loadingElement);
+
+        if (response.status === 200) {
+            // Clear cookies
+            window.jscroot.setCookieWithExpireHour('registration_pending', '', 0);
+            window.jscroot.setCookieWithExpireHour('pending_email', '', 0);
+
+            // Success message
             Swal.fire({
                 icon: 'success',
-                title: 'Register Berhasil!',
-                text: 'Kode OTP telah dikirim ke email Anda. Silakan verifikasi.',
-                confirmButtonText: 'OK',
+                title: 'Registrasi Berhasil!',
+                text: 'Akun Anda telah berhasil dibuat. Silakan login.',
                 confirmButtonColor: '#000000',
-                background: '#ffffff'
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = 'https://sakhaclothing.shop/login/';
             });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Register Gagal!',
-                text: 'Username mungkin sudah digunakan atau terjadi kesalahan.',
-                confirmButtonText: 'Coba Lagi',
-                confirmButtonColor: '#000000',
-                background: '#ffffff'
-            });
+        } else {
+            throw new Error(response.data.error || 'OTP verification failed');
+        }
+    } catch (error) {
+        if (document.body.contains(loadingElement)) {
+            document.body.removeChild(loadingElement);
+        }
+        showOTPError(error.message || 'Verifikasi OTP gagal.');
+    }
+}
+
+// Example 4: URL parameter handling
+async function handleRegisterUrlParameters() {
+    await waitForJscroot();
+
+    const queryString = window.jscroot.getQueryString();
+    const redirectUrl = queryString.redirect;
+    const message = queryString.message;
+
+    if (redirectUrl) {
+        console.log('Register Redirect URL:', redirectUrl);
+    }
+
+    if (message) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Pesan',
+            text: decodeURIComponent(message),
+            confirmButtonColor: '#000000',
+            confirmButtonText: 'OK'
         });
+    }
+}
+
+// Helper functions
+function showError(message) {
+    const errorMsg = window.jscroot.getElement('errorMsg');
+    errorMsg.textContent = message;
+    errorMsg.classList.remove('hidden');
+}
+
+function hideError() {
+    const errorMsg = window.jscroot.getElement('errorMsg');
+    errorMsg.classList.add('hidden');
+}
+
+function showOTPError(message) {
+    const otpErrorMsg = window.jscroot.getElement('otpErrorMsg');
+    otpErrorMsg.textContent = message;
+    otpErrorMsg.classList.remove('hidden');
+}
+
+// Initialize jscroot features
+async function initializeJscrootFeatures() {
+    await waitForJscroot();
+
+    // Handle URL parameters
+    await handleRegisterUrlParameters();
+
+    // Log browser information
+    console.log('Register Is Mobile:', window.jscroot.isMobile());
+
+    // Check if user is already registered
+    const registrationPending = window.jscroot.getCookie('registration_pending');
+    if (registrationPending === 'true') {
+        console.log('Registration pending, showing OTP form');
+        document.getElementById('registerForm').classList.add('hidden');
+        document.getElementById('otpForm').classList.remove('hidden');
+    }
+}
+
+// Original register form handler with jscroot integration
+async function setupRegisterForm() {
+    await waitForJscroot();
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Use jscroot validation
+            if (!(await validateRegisterForm())) {
+                return;
+            }
+
+            const username = window.jscroot.getValue('username').trim();
+            const email = window.jscroot.getValue('email').trim();
+            const fullname = window.jscroot.getValue('fullname').trim();
+            const password = window.jscroot.getValue('password').trim();
+            const confirmPassword = window.jscroot.getValue('confirmPassword').trim();
+            const turnstileToken = document.querySelector('input[name="cf-turnstile-response"]')?.value;
+            const termsAccepted = window.jscroot.getElement('termsCheckbox').checked;
+
+            if (!termsAccepted) {
+                showError('Anda harus menyetujui Syarat dan Ketentuan untuk melanjutkan.');
+                return;
+            }
+
+            if (!turnstileToken) {
+                showError('CAPTCHA wajib diisi.');
+                return;
+            }
+
+            // Use jscroot register function
+            const userData = {
+                username: username,
+                email: email,
+                fullname: fullname,
+                password: password,
+                confirm_password: confirmPassword,
+                "cf-turnstile-response": turnstileToken
+            };
+
+            await registerWithJscroot(userData);
+        });
+    }
+}
+
+// OTP form handler with jscroot integration
+async function setupOTPForm() {
+    await waitForJscroot();
+
+    const otpForm = document.getElementById('otpForm');
+    if (otpForm) {
+        otpForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const otp = window.jscroot.getValue('otp').trim();
+
+            if (!otp || otp.trim() === '') {
+                showOTPError('Kode OTP wajib diisi.');
+                return;
+            }
+
+            if (otp.length !== 6) {
+                showOTPError('Kode OTP harus 6 digit.');
+                return;
+            }
+
+            await verifyOTPWithJscroot(otp);
+        });
+    }
+}
+
+// Resend OTP handler
+async function setupResendOTP() {
+    await waitForJscroot();
+
+    const resendOtpBtn = document.getElementById('resendOtpBtn');
+    if (resendOtpBtn) {
+        resendOtpBtn.addEventListener('click', async function () {
+            try {
+                // Show loading
+                const loadingElement = document.createElement('div');
+                loadingElement.innerHTML = window.jscroot.loading;
+                loadingElement.style.position = 'fixed';
+                loadingElement.style.top = '50%';
+                loadingElement.style.left = '50%';
+                loadingElement.style.transform = 'translate(-50%, -50%)';
+                loadingElement.style.zIndex = '9999';
+                document.body.appendChild(loadingElement);
+
+                const email = window.jscroot.getCookie('pending_email');
+                if (!email) {
+                    throw new Error('Email tidak ditemukan.');
+                }
+
+                const response = await new Promise((resolve) => {
+                    window.jscroot.postJSON(
+                        'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/resend-otp',
+                        { email },
+                        resolve
+                    );
+                });
+
+                document.body.removeChild(loadingElement);
+
+                if (response.status === 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'OTP Terkirim',
+                        text: 'Kode OTP baru telah dikirim ke email Anda.',
+                        confirmButtonColor: '#000000',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    throw new Error(response.data.error || 'Gagal mengirim OTP');
+                }
+            } catch (error) {
+                if (document.body.contains(loadingElement)) {
+                    document.body.removeChild(loadingElement);
+                }
+                showOTPError(error.message || 'Gagal mengirim ulang OTP.');
+            }
+        });
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', async function () {
+    try {
+        // Initialize jscroot features
+        await initializeJscrootFeatures();
+
+        // Setup register form
+        await setupRegisterForm();
+
+        // Setup OTP form
+        await setupOTPForm();
+
+        // Setup resend OTP
+        await setupResendOTP();
+
+    } catch (error) {
+        console.error('Error initializing register:', error);
+    }
 });
 
 // Show/hide password logic
@@ -173,53 +437,4 @@ togglePassword.addEventListener('click', function () {
 toggleConfirmPassword.addEventListener('click', function () {
     passwordVisible = !passwordVisible;
     setPasswordVisibility(passwordVisible);
-});
-
-// OTP form handler
-const otpForm = document.getElementById('otpForm');
-otpForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const otp = document.getElementById('otp').value.trim();
-    const otpErrorMsg = document.getElementById('otpErrorMsg');
-    const email = sessionStorage.getItem('registerEmail');
-    if (!otp) {
-        otpErrorMsg.textContent = 'Kode OTP wajib diisi.';
-        otpErrorMsg.classList.remove('hidden');
-        return;
-    }
-    otpErrorMsg.classList.add('hidden');
-    fetch('https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/verify-email', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            email: email,
-            otp: otp
-        })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message && data.message.includes('berhasil')) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Verifikasi Berhasil!',
-                    text: 'Email Anda berhasil diverifikasi. Silakan login.',
-                    confirmButtonText: 'Login',
-                    confirmButtonColor: '#000000',
-                    background: '#ffffff'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = 'https://sakhaclothing.shop/login/';
-                    }
-                });
-            } else {
-                otpErrorMsg.textContent = data.error || 'OTP salah atau sudah expired.';
-                otpErrorMsg.classList.remove('hidden');
-            }
-        })
-        .catch(error => {
-            otpErrorMsg.textContent = 'Terjadi kesalahan. Coba lagi.';
-            otpErrorMsg.classList.remove('hidden');
-        });
 }); 
