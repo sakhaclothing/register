@@ -220,7 +220,10 @@ async function verifyOTPWithJscroot(otp) {
                 confirmButtonColor: '#000000',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = 'https://sakhaclothing.shop/login/';
+                console.log('Redirecting to login page...');
+
+                // Use relative URL to avoid domain issues
+                window.location.href = '../login/';
             });
         } else {
             throw new Error(response.data.error || 'OTP verification failed');
