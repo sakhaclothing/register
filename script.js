@@ -101,6 +101,7 @@ async function registerWithJscroot(userData) {
         document.body.appendChild(loadingElement);
 
         // Use jscroot API functions
+        console.log('Sending registration data:', userData);
         const response = await new Promise((resolve) => {
             window.jscroot.postJSON(
                 'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/register',
@@ -108,6 +109,7 @@ async function registerWithJscroot(userData) {
                 resolve
             );
         });
+        console.log('Registration response:', response);
 
         // Hide loading
         if (loadingElement && document.body.contains(loadingElement)) {
@@ -132,6 +134,10 @@ async function registerWithJscroot(userData) {
             // Store email for OTP verification
             window.jscroot.setCookieWithExpireHour('pending_email', userData.email, 1);
 
+        } else if (response.status === 409) {
+            throw new Error('Username atau email sudah terdaftar. Silakan gunakan username atau email lain.');
+        } else if (response.status === 400) {
+            throw new Error('Data tidak valid. Pastikan semua field terisi dengan benar.');
         } else {
             throw new Error(response.data.error || 'Registration failed');
         }
@@ -305,6 +311,13 @@ async function setupRegisterForm() {
                 "cf-turnstile-response": turnstileToken
             };
 
+            // Validate data before sending
+            if (!username || !email || !fullname || !password || !confirmPassword || !turnstileToken) {
+                showError('Semua field harus diisi dengan benar.');
+                return;
+            }
+
+            console.log('Form data validated, sending registration request...');
             await registerWithJscroot(userData);
         });
     }
