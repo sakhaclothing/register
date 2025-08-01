@@ -191,7 +191,7 @@ async function verifyOTPWithJscroot(otp) {
 
         const response = await new Promise((resolve) => {
             window.jscroot.postJSON(
-                'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/verify-otp',
+                'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/verify-email',
                 { email, otp },
                 resolve
             );
@@ -392,29 +392,14 @@ async function setupResendOTP() {
                     throw new Error('Email tidak ditemukan.');
                 }
 
-                const response = await new Promise((resolve) => {
-                    window.jscroot.postJSON(
-                        'https://asia-southeast2-ornate-course-437014-u9.cloudfunctions.net/sakha/auth/resend-otp',
-                        { email },
-                        resolve
-                    );
+                // Since there's no resend-otp endpoint, we'll show a message to the user
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Resend OTP',
+                    text: 'Fitur resend OTP belum tersedia. Silakan cek email Anda atau daftar ulang jika diperlukan.',
+                    confirmButtonColor: '#000000',
+                    confirmButtonText: 'OK'
                 });
-
-                if (loadingElement && document.body.contains(loadingElement)) {
-                    document.body.removeChild(loadingElement);
-                }
-
-                if (response.status === 200) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'OTP Terkirim',
-                        text: 'Kode OTP baru telah dikirim ke email Anda.',
-                        confirmButtonColor: '#000000',
-                        confirmButtonText: 'OK'
-                    });
-                } else {
-                    throw new Error(response.data.error || 'Gagal mengirim OTP');
-                }
             } catch (error) {
                 if (loadingElement && document.body.contains(loadingElement)) {
                     document.body.removeChild(loadingElement);
