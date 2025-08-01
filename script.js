@@ -116,7 +116,7 @@ async function registerWithJscroot(userData) {
             document.body.removeChild(loadingElement);
         }
 
-        if (response.status === 200) {
+        if (response.status === 200 || response.status === 201) {
             // Set cookie for registration tracking
             window.jscroot.setCookieWithExpireHour('registration_pending', 'true', 1);
 
@@ -128,11 +128,29 @@ async function registerWithJscroot(userData) {
             console.log('Registration Browser Info:', browserInfo);
 
             // Success - show OTP form
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('otpForm').classList.remove('hidden');
+            console.log('Showing OTP form...');
+            const registerForm = document.getElementById('registerForm');
+            const otpForm = document.getElementById('otpForm');
+
+            if (registerForm && otpForm) {
+                registerForm.classList.add('hidden');
+                otpForm.classList.remove('hidden');
+                console.log('OTP form should now be visible');
+            } else {
+                console.error('Forms not found:', { registerForm, otpForm });
+            }
 
             // Store email for OTP verification
             window.jscroot.setCookieWithExpireHour('pending_email', userData.email, 1);
+
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Registrasi Berhasil!',
+                text: response.data.message || 'Silakan cek email Anda untuk verifikasi OTP.',
+                confirmButtonColor: '#000000',
+                confirmButtonText: 'OK'
+            });
 
         } else if (response.status === 409) {
             throw new Error('Username atau email sudah terdaftar. Silakan gunakan username atau email lain.');
